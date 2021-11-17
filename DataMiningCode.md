@@ -1,5 +1,7 @@
 # conda
 
+## 安装环境
+
 ```shell
 conda create -n TF2.1 python=3.7
 
@@ -15,6 +17,22 @@ pip install tensorflow==2.1
 >>>import tensorflow as tf
 >>>tf.__version__
 ```
+
+
+
+## 查询
+
+```shell
+conda env list
+
+# 激活env_name
+conda activate [env_name]
+
+# 进入jupyter lab
+jupyter lab 
+```
+
+
 
 
 
@@ -50,25 +68,25 @@ pip install tensorflow==2.1
     ```python
     import tensorflow as tf
     from matplotlib import pyplot as plt
-
+    
     # 导入数据集
     mnist = tf.keras.datasets.mnist
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
-
+    
     # ==================可视化======================
-    # 可视化训练集输入特征的第一个元素
+    # 可视化训练集输入特征的第一个图片
     plt.imshow(x_train[0], cmap='gray')  # 绘制灰度图
     plt.show()
-
+    
     # 打印出训练集输入特征的第一个元素
     print("x_train[0]:\n", x_train[0])
-
+    
     # 打印出训练集标签的第一个元素
     print("y_train[0]:\n", y_train[0])
-
+    
     # 打印出整个训练集输入特征形状
     print("x_train.shape:\n", x_train.shape)
-
+    
     # 打印出整个训练集标签的形状
     print("y_train.shape:\n", y_train.shape)
     # ===============================================
@@ -96,7 +114,22 @@ pip install tensorflow==2.1
 
 ## Cifar10
 
+Cifar10数据集：
+提供5万张32*32 像素点的十分类彩色图片和标签，用于训练。
+提供1万张32*32 像素点的十分类彩色图片和标签，用于测试。
 
+![image-20210923193232786](img/image-20210923193232786.png)
+
+
+
+- 导入数据
+
+  ```python
+  cifar10 = tf.keras.datasets.cifar10
+  (x_train, y_train),(x_test, y_test) = cifar10.load_data()
+  ```
+
+  
 
 
 
@@ -1111,30 +1144,38 @@ b1.assign_sub(lr * m_b_correction / tf.sqrt(v_b_correction))
 
   - 全连接层：`tf.keras.layers.Dense(神经元个数, activation="激活函数", kernel_regularizer=哪种正则化)`
 
-    `activation`（字符串给出）可选: relu、softmax、sigmoid 、tanh
+    - `activation`（字符串给出）可选: relu、softmax、sigmoid 、tanh
 
-    `kernel_regularizer`可选:`tf.keras.regularizers.l1()`、`tf.keras.regularizers.l2()`
+    - `kernel_regularizer`可选:`tf.keras.regularizers.l1()`、`tf.keras.regularizers.l2()`
 
 
 
 ### 第四步：`model.compile`
 
-`model.compile(optimizer = 优化器, loss = 损失函数, metrics = [“准确率”] )`
+`model.compile(optimizer = 梯度下降优化器, loss = 损失函数, metrics = [“准确率”] )`
 
 - `optimizer`可选:
+  
   - ‘sgd’ or `tf.keras.optimizers.SGD(lr=学习率,momentum=动量参数)`
   - ‘adagrad’ or `tf.keras.optimizers.Adagrad(lr=学习率)`
   - ‘adadelta’ or `tf.keras.optimizers.Adadelta(lr=学习率)`
   - ‘adam’or `tf.keras.optimizers.Adam(lr=学习率, beta_1=0.9, beta_2=0.999)`
+  
+  
 - `loss`可选:
-  - ‘mse’or `tf.keras.losses.MeanSquaredError()`
-  - ‘sparse_categorical_crossentropy’ or `tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False)`
-    - `from_logits=False` 网络最后进行了softmax概率归一化
+  - `mse` or `tf.keras.losses.MeanSquaredError()` 
+    - 回归问题---均方误差
+  - `sparse_categorical_crossentropy`or `tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False)`
+    - 多分类---交叉熵
+    - `from_logits=False` 网络最后进行了 softmax 概率归一化
     - `from_logits=True`
+
+
+
 - `metrics`可选:
-  - ‘accuracy’ ：y\_和y都是数值，如 y\_=[1]，y=[1]
-  - ‘categorical_accuracy’ ：y\_和y都是独热码(概率分布)，如 y_=[0,1,0]，y=[0.256,0.695,0.048]
-  - ‘sparse_categorical_accuracy’ ：y\_是数值，y是独热码(概率分布)，如 y\_=[1]，y=[0.256,0.695,0.048]
+  - `accuracy`：y\_和y都是数值，如 y\_=[1]，y=[1]
+  - `categorical_accuracy`：y\_和y都是独热码(概率分布)，如 y_=[0,1,0]，y=[0.256,0.695,0.048]
+  - `sparse_categorical_accuracy`：y\_是数值，y是独热码(概率分布)，如 y\_=[1]，y=[0.256,0.695,0.048]
 
 
 
@@ -1275,10 +1316,11 @@ model = IrisModel()
 
 ```python
 # 读取模型
-checkpoint_save_path = "./checkpoint/fashion.ckpt"
+checkpoint_save_path = "./checkpoint/model_name.ckpt"
 if os.path.exists(checkpoint_save_path + '.index'):
     print('-------------load the model-----------------')
-    model.load_weights(checkpoint_save_path)
+    # checkpoint_save_path 地址不加 '.index'
+    model.load_weights(checkpoint_save_path) 
 ```
 
 
@@ -1286,20 +1328,19 @@ if os.path.exists(checkpoint_save_path + '.index'):
 ### 保存模型
 
 ```python
-tf.keras.callbacks.ModelCheckpoint(
+my_callback = tf.keras.callbacks.ModelCheckpoint(
                     filepath=路径文件名, 
                     save_weights_only=True/False, 
                     save_best_only=True/False)
 
-history = model.fit(callbacks=[cp_callback])
+history = model.fit(callbacks=[my_callback])
 
 
-# 例
-cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_save_path,
+# 例 =====================================
+my_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_save_path,
                                                  save_weights_only=True,
                                                  save_best_only=True)
-
-history = model.fit(x_train, y_train, batch_size=32, epochs=5, validation_data=(x_test, y_test), validation_freq=1, callbacks=[cp_callback])
+history = model.fit(x_train, y_train, batch_size=32, epochs=5, validation_data=(x_test, y_test), validation_freq=1, callbacks=[my_callback])
 ```
 
 
@@ -1315,7 +1356,7 @@ history = model.fit(x_train, y_train, batch_size=32, epochs=5, validation_data=(
   `np.set_printoptions(threshold=超过多少省略显示)`
 
 ```python
-np.set_printoptions(threshold=np.inf)# np.inf表示无限大
+np.set_printoptions(threshold=np.inf) # np.inf表示无限大
 print(model.trainable_variables)
 
 file = open('./weights.txt', 'w')
@@ -1391,6 +1432,10 @@ plt.show()
 # 数据预处理
 result = model.predict(x_predict)
 pred = tf.argmax(result, axis=1) # 取概率最大值
+
+acc = tf.keras.metrics.Accuracy()
+acc.update_state(y_test, pred) # y_test=真实标签, pred=预测值
+print(acc.result().numpy())    # 0.9 小数值
 ```
 
 
@@ -1527,9 +1572,19 @@ plt.show()
 
 ![image-20210914142029510](img/image-20210914142029510.png)
 
-
-
 ![image-20210914142135724](img/image-20210914142135724.png)
+
+CBAPD
+
+- C: 卷积
+  - 一张原图（32，32，3）**－－＞**经过k个卷积核生成ｋ张二维特征图（32，32）
+- B: 批标准化
+  - 数据格式不会发生改变
+- A: 激活函数
+  - 所有元素经过激活函数映射（无可训练参数）
+- P: 池化
+- D: 舍弃
+  - 随机丢弃元素
 
 
 
@@ -1609,7 +1664,7 @@ plt.show()
 tf.keras.layers.Conv2D (
     filters = 卷积核个数, 
     kernel_size = 卷积核尺寸,  # 正方形写核长整数，或（核高h，核宽w）
-    strides = 滑动步长,  # 横纵向相同写步长整数，或(纵向步长h，横向步长w)，默认1
+    strides = 滑动步长,        # 横纵向相同写步长整数，或(纵向步长h，横向步长w)，默认1
     padding = “same” or “valid”,  # 使用全零填充是“same”，不使用是“valid”（默认）
     activation = “ relu” or “ sigmoid ” or “ tanh ” or “ softmax”等,  # 如有BN此处不写
     input_shape = (高, 宽, 通道数)  # 输入特征图维度，可省略
@@ -1632,14 +1687,14 @@ model = tf.keras.models.Sequential([
 
 ## 批标准化
 
-> Batch Normalization (BN)
+> Batch Normalization (BN)　前后的**数据格式不会发生变化**，仅仅是数值的标准化处理
 
-- 标准化：使数据符合0均值，1为标准差的分布。
-- 批标准化：对一小批数据（batch），做标准化处理。
+- 标准化：使数据符合0均值，1为标准差的分布
+- 批标准化：对一小批数据（batch），做标准化处理
 
 
 
-- 均值标准差：求解一个batch内，第k个卷积核，输出特征图中，求所有元素的均值，标准差
+- 均值标准差：求解(**一个batch内，第k个卷积核下，输出特征图中**) 所有元素的均值，标准差
 
 ![image-20210914140348954](img/image-20210914140348954.png)
 
@@ -1648,6 +1703,15 @@ model = tf.keras.models.Sequential([
 
 
 - 归一化
+
+  - 一个batch中, 共有**batch组图**, 每组图由 **K个子图**（ｆｅａｔｕｒｅ　ｍａｐ）构成，共（Ｂａｔｃｈ＊Ｋ）张图
+  
+  - 一个卷积核生成一张子图（ｆｅａｔｕｒｅ　ｍａｐ）
+  
+  - 对同一卷积核生成的ｂａｔｃｈ张子图（ｆｅａｔｕｒｅ　ｍａｐ）中的所有元素做归一化
+  
+    
+  
 
 ![image-20210914140511017](img/image-20210914140511017.png)
 
@@ -1748,13 +1812,515 @@ model = tf.keras.models.Sequential([
 
 
 
+
+
+## 卷积网络搭建示例
+
+
+
+![image-20210923194014740](img/image-20210923194014740.png)
+
+
+
+- 卷积网络结构
+
+  ```python
+  class Baseline(Model):
+      def __init__(self):
+          super(Baseline, self).__init__()
+          self.c1 = Conv2D(filters=6, kernel_size=(5, 5), padding='same')   # C: 卷积层
+          self.b1 = BatchNormalization()  								  # B: BN层
+          self.a1 = Activation('relu')  									  # A: 激活层
+          self.p1 = MaxPool2D(pool_size=(2, 2), strides=2, padding='same')  # P: 池化层
+          self.d1 = Dropout(0.2)  										  # D: dropout层
+  
+          self.flatten = Flatten() # 拉直
+          
+          self.f1 = Dense(128, activation='relu')
+          self.d2 = Dropout(0.2)
+          self.f2 = Dense(10, activation='softmax')
+  
+      def call(self, x):
+          x = self.c1(x)
+          x = self.b1(x)
+          x = self.a1(x)
+          x = self.p1(x)
+          x = self.d1(x)
+  
+          x = self.flatten(x)
+          x = self.f1(x)
+          x = self.d2(x)
+          y = self.f2(x)
+          return y
+  ```
+
+  
+
+- Baseline
+
+  ```python
+  import tensorflow as tf
+  import os
+  import numpy as np
+  from matplotlib import pyplot as plt
+  from tensorflow.keras.layers import Conv2D, BatchNormalization, Activation, MaxPool2D, Dropout, Flatten, Dense
+  from tensorflow.keras import Model
+  
+  np.set_printoptions(threshold=np.inf)
+  
+  cifar10 = tf.keras.datasets.cifar10
+  (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+  x_train, x_test = x_train / 255.0, x_test / 255.0
+  
+  
+  class Baseline(Model):
+      def __init__(self):
+          super(Baseline, self).__init__()
+          self.c1 = Conv2D(filters=6, kernel_size=(5, 5), padding='same')  # 卷积层
+          self.b1 = BatchNormalization()  # BN层
+          self.a1 = Activation('relu')  # 激活层
+          self.p1 = MaxPool2D(pool_size=(2, 2), strides=2, padding='same')  # 池化层
+          self.d1 = Dropout(0.2)  # dropout层
+  
+          self.flatten = Flatten()
+          self.f1 = Dense(128, activation='relu')
+          self.d2 = Dropout(0.2)
+          self.f2 = Dense(10, activation='softmax')
+  
+      def call(self, x):
+          x = self.c1(x)
+          x = self.b1(x)
+          x = self.a1(x)
+          x = self.p1(x)
+          x = self.d1(x)
+  
+          x = self.flatten(x)
+          x = self.f1(x)
+          x = self.d2(x)
+          y = self.f2(x)
+          return y
+  
+  
+  model = Baseline()
+  
+  model.compile(optimizer='adam',loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),metrics=['sparse_categorical_accuracy'])
+  
+  checkpoint_save_path = "./checkpoint/Baseline.ckpt"
+  if os.path.exists(checkpoint_save_path + '.index'):
+      print('-------------load the model-----------------')
+      model.load_weights(checkpoint_save_path)
+  
+  cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_save_path,
+                                                   save_weights_only=True,
+                                                   save_best_only=True)
+  
+  history = model.fit(x_train, y_train, batch_size=32, epochs=5, validation_data=(x_test, y_test), validation_freq=1, callbacks=[cp_callback])
+  model.summary()
+  
+  # print(model.trainable_variables)
+  file = open('./weights.txt', 'w')
+  for v in model.trainable_variables:
+      file.write(str(v.name) + '\n')
+      file.write(str(v.shape) + '\n')
+      file.write(str(v.numpy()) + '\n')
+  file.close()
+  
+  ############################    show   ################################
+  
+  # 显示训练集和验证集的acc和loss曲线
+  acc = history.history['sparse_categorical_accuracy']
+  val_acc = history.history['val_sparse_categorical_accuracy']
+  loss = history.history['loss']
+  val_loss = history.history['val_loss']
+  
+  plt.subplot(1, 2, 1)
+  plt.plot(acc, label='Training Accuracy')
+  plt.plot(val_acc, label='Validation Accuracy')
+  plt.title('Training and Validation Accuracy')
+  plt.legend()
+  
+  plt.subplot(1, 2, 2)
+  plt.plot(loss, label='Training Loss')
+  plt.plot(val_loss, label='Validation Loss')
+  plt.title('Training and Validation Loss')
+  plt.legend()
+  plt.show()
+  ```
+
+
+
 ## LeNet
 
+> LeNet由Yann LeCun于1998年提出，卷积网络开篇之作。
+> Yann Lecun, Leon Bottou, Y. Bengio, Patrick Haffner. Gradient-Based Learning Applied to Document Recognition. Proceedings of the IEEE, 1998.
 
 
 
+- 卷积网络结构
+
+  ![image-20210923194811156](img/image-20210923194811156.png)
+
+
+
+- 代码
+
+  ![image-20210923195114222](img/image-20210923195114222.png)
+
+  ```python
+  class LeNet5(Model):
+      def __init__(self):
+          super(LeNet5, self).__init__()
+          self.c1 = Conv2D(filters=6, kernel_size=(5, 5), activation='sigmoid')
+          self.p1 = MaxPool2D(pool_size=(2, 2), strides=2)
+  
+          self.c2 = Conv2D(filters=16, kernel_size=(5, 5), activation='sigmoid')
+          self.p2 = MaxPool2D(pool_size=(2, 2), strides=2)
+  
+          self.flatten = Flatten()
+          self.f1 = Dense(120, activation='sigmoid')
+          self.f2 = Dense(84, activation='sigmoid')
+          self.f3 = Dense(10, activation='softmax')
+  
+      def call(self, x):
+          x = self.c1(x)
+          x = self.p1(x)
+  
+          x = self.c2(x)
+          x = self.p2(x)
+  
+          x = self.flatten(x)
+          x = self.f1(x)
+          x = self.f2(x)
+          y = self.f3(x)
+          return y
+  ```
+
+  
 
 ## AlexNet
+
+> AlexNet网络诞生于2012年，当年ImageNet竞赛的冠军，Top5错误率为16.4%
+> Alex Krizhevsky, Ilya Sutskever, Geoffrey E. Hinton. ImageNet Classification with Deep Convolutional Neural Networks. In NIPS, 2012.
+
+
+
+- 卷积网络结构
+
+  ![image-20210923195341412](img/image-20210923195341412.png)
+
+
+
+- 代码
+
+  ![image-20210923195604450](img/image-20210923195604450.png)
+  
+  ```python
+  class AlexNet8(Model):
+      def __init__(self):
+          super(AlexNet8, self).__init__()
+          self.c1 = Conv2D(filters=96, kernel_size=(3, 3))
+          self.b1 = BatchNormalization()
+          self.a1 = Activation('relu')
+          self.p1 = MaxPool2D(pool_size=(3, 3), strides=2)
+  
+          self.c2 = Conv2D(filters=256, kernel_size=(3, 3))
+          self.b2 = BatchNormalization()
+          self.a2 = Activation('relu')
+          self.p2 = MaxPool2D(pool_size=(3, 3), strides=2)
+  
+          self.c3 = Conv2D(filters=384, kernel_size=(3, 3), padding='same', activation='relu')
+                           
+          self.c4 = Conv2D(filters=384, kernel_size=(3, 3), padding='same', activation='relu')
+                           
+          self.c5 = Conv2D(filters=256, kernel_size=(3, 3), padding='same', activation='relu')
+          self.p3 = MaxPool2D(pool_size=(3, 3), strides=2)
+  
+          self.flatten = Flatten()
+          self.f1 = Dense(2048, activation='relu')
+          self.d1 = Dropout(0.5)
+          self.f2 = Dense(2048, activation='relu')
+          self.d2 = Dropout(0.5)
+          self.f3 = Dense(10, activation='softmax')
+  
+      def call(self, x):
+          x = self.c1(x)
+          x = self.b1(x)
+          x = self.a1(x)
+          x = self.p1(x)
+  
+          x = self.c2(x)
+          x = self.b2(x)
+          x = self.a2(x)
+          x = self.p2(x)
+  
+          x = self.c3(x)
+  
+          x = self.c4(x)
+  
+          x = self.c5(x)
+          x = self.p3(x)
+  
+          x = self.flatten(x)
+          x = self.f1(x)
+          x = self.d1(x)
+          x = self.f2(x)
+          x = self.d2(x)
+          y = self.f3(x)
+          return y
+  ```
+  
+  
+
+## VGGNet
+
+> VGGNet诞生于2014年，当年ImageNet竞赛的亚军，Top5错误率减小到7.3%
+> K. Simonyan, A. Zisserman. Very Deep Convolutional Networks for Large-Scale Image Recognition.In ICLR,
+> 2015.
+
+
+
+- 代码
+
+  ![image-20210923200208773](img/image-20210923200208773.png)
+
+  ```python
+  class VGG16(Model):
+      def __init__(self):
+          super(VGG16, self).__init__()
+          self.c1 = Conv2D(filters=64, kernel_size=(3, 3), padding='same')  # 卷积层1
+          self.b1 = BatchNormalization()  # BN层1
+          self.a1 = Activation('relu')  # 激活层1
+          self.c2 = Conv2D(filters=64, kernel_size=(3, 3), padding='same', )
+          self.b2 = BatchNormalization()  # BN层1
+          self.a2 = Activation('relu')  # 激活层1
+          self.p1 = MaxPool2D(pool_size=(2, 2), strides=2, padding='same')
+          self.d1 = Dropout(0.2)  # dropout层
+  
+          self.c3 = Conv2D(filters=128, kernel_size=(3, 3), padding='same')
+          self.b3 = BatchNormalization()  # BN层1
+          self.a3 = Activation('relu')  # 激活层1
+          self.c4 = Conv2D(filters=128, kernel_size=(3, 3), padding='same')
+          self.b4 = BatchNormalization()  # BN层1
+          self.a4 = Activation('relu')  # 激活层1
+          self.p2 = MaxPool2D(pool_size=(2, 2), strides=2, padding='same')
+          self.d2 = Dropout(0.2)  # dropout层
+  
+          self.c5 = Conv2D(filters=256, kernel_size=(3, 3), padding='same')
+          self.b5 = BatchNormalization()  # BN层1
+          self.a5 = Activation('relu')  # 激活层1
+          self.c6 = Conv2D(filters=256, kernel_size=(3, 3), padding='same')
+          self.b6 = BatchNormalization()  # BN层1
+          self.a6 = Activation('relu')  # 激活层1
+          self.c7 = Conv2D(filters=256, kernel_size=(3, 3), padding='same')
+          self.b7 = BatchNormalization()
+          self.a7 = Activation('relu')
+          self.p3 = MaxPool2D(pool_size=(2, 2), strides=2, padding='same')
+          self.d3 = Dropout(0.2)
+  
+          self.c8 = Conv2D(filters=512, kernel_size=(3, 3), padding='same')
+          self.b8 = BatchNormalization()  # BN层1
+          self.a8 = Activation('relu')  # 激活层1
+          self.c9 = Conv2D(filters=512, kernel_size=(3, 3), padding='same')
+          self.b9 = BatchNormalization()  # BN层1
+          self.a9 = Activation('relu')  # 激活层1
+          self.c10 = Conv2D(filters=512, kernel_size=(3, 3), padding='same')
+          self.b10 = BatchNormalization()
+          self.a10 = Activation('relu')
+          self.p4 = MaxPool2D(pool_size=(2, 2), strides=2, padding='same')
+          self.d4 = Dropout(0.2)
+  
+          self.c11 = Conv2D(filters=512, kernel_size=(3, 3), padding='same')
+          self.b11 = BatchNormalization()  # BN层1
+          self.a11 = Activation('relu')  # 激活层1
+          self.c12 = Conv2D(filters=512, kernel_size=(3, 3), padding='same')
+          self.b12 = BatchNormalization()  # BN层1
+          self.a12 = Activation('relu')  # 激活层1
+          self.c13 = Conv2D(filters=512, kernel_size=(3, 3), padding='same')
+          self.b13 = BatchNormalization()
+          self.a13 = Activation('relu')
+          self.p5 = MaxPool2D(pool_size=(2, 2), strides=2, padding='same')
+          self.d5 = Dropout(0.2)
+  
+          self.flatten = Flatten()
+          self.f1 = Dense(512, activation='relu')
+          self.d6 = Dropout(0.2)
+          self.f2 = Dense(512, activation='relu')
+          self.d7 = Dropout(0.2)
+          self.f3 = Dense(10, activation='softmax')
+  
+      def call(self, x):
+          x = self.c1(x)
+          x = self.b1(x)
+          x = self.a1(x)
+          x = self.c2(x)
+          x = self.b2(x)
+          x = self.a2(x)
+          x = self.p1(x)
+          x = self.d1(x)
+  
+          x = self.c3(x)
+          x = self.b3(x)
+          x = self.a3(x)
+          x = self.c4(x)
+          x = self.b4(x)
+          x = self.a4(x)
+          x = self.p2(x)
+          x = self.d2(x)
+  
+          x = self.c5(x)
+          x = self.b5(x)
+          x = self.a5(x)
+          x = self.c6(x)
+          x = self.b6(x)
+          x = self.a6(x)
+          x = self.c7(x)
+          x = self.b7(x)
+          x = self.a7(x)
+          x = self.p3(x)
+          x = self.d3(x)
+  
+          x = self.c8(x)
+          x = self.b8(x)
+          x = self.a8(x)
+          x = self.c9(x)
+          x = self.b9(x)
+          x = self.a9(x)
+          x = self.c10(x)
+          x = self.b10(x)
+          x = self.a10(x)
+          x = self.p4(x)
+          x = self.d4(x)
+  
+          x = self.c11(x)
+          x = self.b11(x)
+          x = self.a11(x)
+          x = self.c12(x)
+          x = self.b12(x)
+          x = self.a12(x)
+          x = self.c13(x)
+          x = self.b13(x)
+          x = self.a13(x)
+          x = self.p5(x)
+          x = self.d5(x)
+  
+          x = self.flatten(x)
+          x = self.f1(x)
+          x = self.d6(x)
+          x = self.f2(x)
+          x = self.d7(x)
+          y = self.f3(x)
+          return y
+  ```
+
+  
+
+## InceptionNet
+
+> InceptionNet诞生于2014年，当年ImageNet竞赛冠军，Top5错误率为6.67%
+> Szegedy C, Liu W, Jia Y, et al. Going Deeper with Convolutions. In CVPR, 2015.
+
+
+
+- 卷积网络结构
+
+  - 单个block
+
+  ![image-20210923200500732](img/image-20210923200500732.png)
+
+  
+
+  - 完整结构
+    - 黄色框图由4个block组成
+
+​	<img src="img/image-20210923201133948.png" alt="image-20210923201133948" style="zoom:120%;" />
+
+
+
+- 代码
+
+  - 最小单元
+
+      ```python
+      class ConvBNRelu(Model):
+          def __init__(self, ch, kernelsz=3, strides=1, padding='same'):
+              super(ConvBNRelu, self).__init__()
+              self.model = tf.keras.models.Sequential([
+                  Conv2D(ch, kernelsz, strides=strides, padding=padding),
+                  BatchNormalization(),
+                  Activation('relu')
+              ])
+
+          def call(self, x):
+              x = self.model(x, training=False) 
+              # training=False时，BN通过整个训练集计算均值、方差去做批归一化，
+              # training=True时，通过当前batch的均值、方差去做批归一化。推理时 training=False效果好
+              return x
+      ```
+
+  - block
+
+    ```python
+    class InceptionBlk(Model):
+        def __init__(self, ch, strides=1):
+            super(InceptionBlk, self).__init__()
+            self.ch = ch
+            self.strides = strides
+            self.c1 = ConvBNRelu(ch, kernelsz=1, strides=strides)
+            self.c2_1 = ConvBNRelu(ch, kernelsz=1, strides=strides)
+            self.c2_2 = ConvBNRelu(ch, kernelsz=3, strides=1)
+            self.c3_1 = ConvBNRelu(ch, kernelsz=1, strides=strides)
+            self.c3_2 = ConvBNRelu(ch, kernelsz=5, strides=1)
+            self.p4_1 = MaxPool2D(3, strides=1, padding='same')
+            self.c4_2 = ConvBNRelu(ch, kernelsz=1, strides=strides)
+    
+        def call(self, x):
+            x1 = self.c1(x)
+            x2_1 = self.c2_1(x)
+            x2_2 = self.c2_2(x2_1)
+            x3_1 = self.c3_1(x)
+            x3_2 = self.c3_2(x3_1)
+            x4_1 = self.p4_1(x)
+            x4_2 = self.c4_2(x4_1)
+    
+            x = tf.concat([x1, x2_2, x3_2, x4_2], axis=3) # concat along axis=channel
+            return x
+    ```
+
+  - 完整结构
+
+      ```python
+      class Inception10(Model):
+          def __init__(self, num_blocks, num_classes, init_ch=16, **kwargs):
+              super(Inception10, self).__init__(**kwargs)
+              self.in_channels = init_ch
+              self.out_channels = init_ch
+              self.num_blocks = num_blocks
+              self.init_ch = init_ch
+              self.c1 = ConvBNRelu(init_ch)
+              self.blocks = tf.keras.models.Sequential()
+              for block_id in range(num_blocks):
+                  for layer_id in range(2):
+                      if layer_id == 0:
+                          block = InceptionBlk(self.out_channels, strides=2)
+                      else:
+                          block = InceptionBlk(self.out_channels, strides=1)
+                      self.blocks.add(block)
+                  # enlarger out_channels per block
+                  self.out_channels *= 2
+              self.p1 = GlobalAveragePooling2D()
+              self.f1 = Dense(num_classes, activation='softmax')
+      
+          def call(self, x):
+              x = self.c1(x)
+              x = self.blocks(x)
+              x = self.p1(x)
+              y = self.f1(x)
+              return y
+      
+      model = Inception10(num_blocks=2, num_classes=10)
+      ```
+
+      
 
 
 
@@ -1764,7 +2330,125 @@ model = tf.keras.models.Sequential([
 
 ## ResNet
 
+> ResNet诞生于2015年，当年ImageNet竞赛冠军，Top5错误率为3.57%
+> Kaiming He, Xiangyu Zhang, Shaoqing Ren. Deep Residual Learning for Image Recognition. In CPVR,
+> 2016.
 
+
+
+- 卷积网络结构
+
+  ![image-20210923202253484](img/image-20210923202253484.png)
+
+
+
+​	![image-20210923202239299](img/image-20210923202239299.png)
+
+
+
+
+
+- 代码结构
+
+  <img src="img/image-20210923202428767.png" alt="image-20210923202428767" style="zoom:100%;" />
+
+
+
+​	![image-20210923202600001](img/image-20210923202600001.png)
+
+
+
+- ResNet块
+
+```python
+class ResnetBlock(Model):
+
+    def __init__(self, filters, strides=1, residual_path=False):
+        super(ResnetBlock, self).__init__()
+        self.filters = filters
+        self.strides = strides
+        self.residual_path = residual_path
+
+        self.c1 = Conv2D(filters, (3, 3), strides=strides, padding='same', use_bias=False)
+        self.b1 = BatchNormalization()
+        self.a1 = Activation('relu')
+
+        self.c2 = Conv2D(filters, (3, 3), strides=1, padding='same', use_bias=False)
+        self.b2 = BatchNormalization()
+
+        # residual_path为True时，对输入进行下采样，即用1x1的卷积核做卷积操作，保证x能和F(x)维度相同，顺利相加
+        if residual_path:
+            self.down_c1 = Conv2D(filters, (1, 1), strides=strides, padding='same', use_bias=False)
+            self.down_b1 = BatchNormalization()
+        
+        self.a2 = Activation('relu')
+
+    def call(self, inputs):
+        residual = inputs  # residual等于输入值本身，即residual=x
+        # 将输入通过卷积、BN层、激活层，计算F(x)
+        x = self.c1(inputs)
+        x = self.b1(x)
+        x = self.a1(x)
+
+        x = self.c2(x)
+        y = self.b2(x)
+
+        if self.residual_path:
+            residual = self.down_c1(inputs)
+            residual = self.down_b1(residual)
+
+        out = self.a2(y + residual)  # 最后输出的是两部分的和，即F(x)+x或F(x)+Wx,再过激活函数
+        return out
+```
+
+
+
+- 整体结构
+
+```python
+class ResNet18(Model):
+
+    def __init__(self, block_list, initial_filters=64):  # block_list表示每个block有几个卷积层
+        super(ResNet18, self).__init__()
+        self.num_blocks = len(block_list)  # 共有几个block
+        self.block_list = block_list
+        self.out_filters = initial_filters
+        self.c1 = Conv2D(self.out_filters, (3, 3), strides=1, padding='same', use_bias=False)
+        self.b1 = BatchNormalization()
+        self.a1 = Activation('relu')
+        self.blocks = tf.keras.models.Sequential()
+        # 构建ResNet网络结构
+        for block_id in range(len(block_list)):  # 第几个resnet block
+            for layer_id in range(block_list[block_id]):  # 第几个卷积层
+                
+                if block_id != 0 and layer_id == 0:  # 对除第一个block以外的每个block的输入进行下采样
+                    block = ResnetBlock(self.out_filters, strides=2, residual_path=True)
+                else:
+                    block = ResnetBlock(self.out_filters, residual_path=False)
+                self.blocks.add(block)  # 将构建好的block加入resnet
+                
+            self.out_filters *= 2  # 下一个block的卷积核数是上一个block的2倍
+            
+        self.p1 = tf.keras.layers.GlobalAveragePooling2D()
+        self.f1 = tf.keras.layers.Dense(10, activation='softmax', 			 							kernel_regularizer=tf.keras.regularizers.l2())
+
+    def call(self, inputs):
+        x = self.c1(inputs)
+        x = self.b1(x)
+        x = self.a1(x)
+        x = self.blocks(x)
+        x = self.p1(x)
+        y = self.f1(x)
+        return y
+```
+
+
+
+
+
+## 经典卷积网络
+
+![image-20210923203806642](img/image-20210923203806642.png)
 
 
 
@@ -1774,6 +2458,187 @@ model = tf.keras.models.Sequential([
 
 
 
+## 循环核
+
+- 前向传播时：
+  - 记忆体内存储的**状态信息ht，在每个时刻都被刷新**
+  - 三个参数矩阵**wxh，whh，why自始至终都是固定不变**
+- 反向传播时：
+  - 三个参数矩阵**wxh，whh，why被梯度下降法更新**
+
+![image-20210923204834386](img/image-20210923204834386.png)
+
+![image-20210925171201900](img/image-20210925171201900.png)
+
+![image-20210923205034365](img/image-20210923205034365.png)
+
+
+
+## 循环计算层
+
+> 向输出方向生长, 不断叠加
+
+
+
+![image-20210925171328635](img/image-20210925171328635.png)
+
+
+
+### `SimpleRNN`
+
+一个循环核可以有多个记忆体
+
+建立一个`SimpleRNN`对应建立一个循环计算层, `SimpleRNN`可叠加, 生成多层循环计算层
+
+```python
+tf.keras.layers.SimpleRNN(记忆体个数，activation=‘激活函数’，return_sequences=是否每个时刻输出ht到下一层)
+
+# 记忆体个数：即循环核中记忆体的个数
+# activation=‘激活函数’   不写，默认使用tanh
+# return_sequences=True  各时间步输出ht
+# return_sequences=False 仅最后时间步输出ht（默认）
+
+例：SimpleRNN(3, return_sequences=True)
+
+```
+
+
+
+- return_sequences
+
+  当下一层依然是RNN层，通常为True; 反之如果后面是Dense层，通常为Fasle
+
+  - `return_sequences=True`
+
+  ![image-20210925171927616](img/image-20210925171927616.png)
+
+  - `return_sequences=False`
+
+    ![image-20210925172026160](img/image-20210925172026160.png)
+
+
+
+
+
+## 输入格式
+
+- x_train维度：
+  **[样本数量(有几句话)，时间步数(有几个时间步)，每个时间步输入特征个数(一个单词由几维向量表示)]**
+
+  ![image-20210925172625056](img/image-20210925172625056.png)
+
+  
+
+## 单字母预测
+
+- 以字母预测为例：输入a预测出b，输入b预测出c，输入c预测出d，输入d预测出e，输入e预测出a
+
+- 字母编码(向量表示)
+
+![image-20210925172734542](img/image-20210925172734542.png)
+
+- 前向传播计算方式
+
+<img src="img/image-20210925172745975.png" alt="image-20210925172745975" style="zoom:125%;" />
+
+![image-20210925172951309](img/image-20210925172951309.png)
+
+![image-20210925173554693](img/image-20210925173554693.png)
+
+
+
+- 代码
+
+  - 数据准备
+
+    ```python
+    import numpy as np
+    import tensorflow as tf
+    from tensorflow.keras.layers import Dense, SimpleRNN
+    import matplotlib.pyplot as plt
+    import os
+    
+    input_word = "abcde"
+    w_to_id = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4}  # 单词映射到数值id的词典
+    id_to_onehot = {0: [1., 0., 0., 0., 0.], 
+                    1: [0., 1., 0., 0., 0.], 
+                    2: [0., 0., 1., 0., 0.], 
+                    3: [0., 0., 0., 1., 0.], 
+                    4: [0., 0., 0., 0., 1.]}  # id编码为one-hot
+    
+    # 将字母转换为向量表示
+    x_train = [id_to_onehot[w_to_id['a']], 
+               id_to_onehot[w_to_id['b']], 
+               id_to_onehot[w_to_id['c']],
+               id_to_onehot[w_to_id['d']], 
+               id_to_onehot[w_to_id['e']]]
+    y_train = [w_to_id['b'], w_to_id['c'], w_to_id['d'], w_to_id['e'], w_to_id['a']]
+    
+    # 打乱数据集顺序
+    np.random.seed(7)
+    np.random.shuffle(x_train)
+    np.random.seed(7)
+    np.random.shuffle(y_train)
+    tf.random.set_seed(7)
+    
+    # 使x_train符合SimpleRNN输入要求：[送入样本数， 循环核时间展开步数， 每个时间步输入特征个数]。
+    # 此处整个数据集送入，送入样本数为len(x_train)
+    # 输入1个字母出结果，循环核时间展开步数为1
+    # 表示为独热码有5个输入特征，每个时间步输入特征个数为5
+    x_train = np.reshape(x_train, (len(x_train), 1, 5))
+    y_train = np.array(y_train)
+    ```
+
+    
+
+  - 模型训练
+
+    ```python
+    model = tf.keras.Sequential([
+        SimpleRNN(3),
+        Dense(5, activation='softmax')
+    ])
+    
+    model.compile(optimizer=tf.keras.optimizers.Adam(0.01),
+                  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+                  metrics=['sparse_categorical_accuracy'])
+    
+    checkpoint_save_path = "./checkpoint/rnn_onehot_1pre1.ckpt"
+    
+    if os.path.exists(checkpoint_save_path + '.index'):
+        print('-------------load the model-----------------')
+        model.load_weights(checkpoint_save_path)
+    
+    cp_callback = tf.keras.callbacks.ModelCheckpoint(
+        				filepath=checkpoint_save_path,
+                        save_weights_only=True,
+                        save_best_only=True,
+                        monitor='loss')  # 由于fit没有给出测试集，不计算测试集准确率，根据loss，保存最优模型
+    
+    history = model.fit(x_train, y_train, batch_size=32, epochs=100, callbacks=[cp_callback])
+    
+    model.summary()
+    
+    # print(model.trainable_variables)
+    file = open('./weights.txt', 'w')  # 参数提取
+    for v in model.trainable_variables:
+        file.write(str(v.name) + '\n')
+        file.write(str(v.shape) + '\n')
+        file.write(str(v.numpy()) + '\n')
+    file.close()
+    ```
+
+    
+
+  - df
+
+    
+
+
+
+
+
+## 多字母预测
 
 
 
@@ -1781,58 +2646,25 @@ model = tf.keras.models.Sequential([
 
 
 
+## Embedding
 
 
 
 
 
+## 股票预测
 
 
 
+### RNN
 
 
 
+### LSTM
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+### GRU
 
 
 
